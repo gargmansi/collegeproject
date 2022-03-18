@@ -1,4 +1,3 @@
-import 'package:collageproject/widget/chart.dart';
 import 'package:collageproject/widget/splash.dart';
 import 'package:flutter/material.dart';
 
@@ -12,10 +11,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme:
-          ThemeData(colorScheme: ColorScheme.light(), fontFamily: "Quicksand"),
+      theme: ThemeData(
+          colorScheme: const ColorScheme.light(), fontFamily: "Quicksand"),
       debugShowCheckedModeBanner: false,
-      home: Splash(),
+      home: const Splash(),
     );
   }
 }

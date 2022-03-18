@@ -36,6 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.2
   line_icons: ^2.0.1
   lottie: ^1.2.2
+  http:
+  get: ^4.6.1
+  dio: 
+  gpt_3_dart: 
+  intl: ^0.17.0
+  
+  
 
 dev_dependencies:
   flutter_test:

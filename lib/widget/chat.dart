@@ -1,31 +1,31 @@
 import 'package:collageproject/config/color_config.dart';
+import 'package:collageproject/data/openai.dart';
+import 'package:collageproject/services/open_ai_service.dart';
 import 'package:collageproject/ui/mtstyle.dart';
 import 'package:collageproject/utils/size.dart';
 import 'package:collageproject/widget/titletext.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:lottie/lottie.dart';
 
-class Chart extends StatefulWidget {
-  const Chart({Key? key}) : super(key: key);
+class Chat extends StatefulWidget {
+  const Chat({Key? key}) : super(key: key);
 
   @override
-  State<Chart> createState() => _ChartState();
+  State<Chat> createState() => _ChatState();
 }
 
-class _ChartState extends State<Chart> {
+class _ChatState extends State<Chat> {
   TextEditingController controller = TextEditingController();
-  List<String> messages = [
-    "Hello",
-    "Hey",
-    "This is demo message",
-    "This is a reply"
-  ];
+  List<Map<String, dynamic>> messages = [];
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
+        title: const Text(
           "chatbot",
           style: TextStyle(
               color: Colors.blueGrey,
@@ -39,7 +39,7 @@ class _ChartState extends State<Chart> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(25.0),
-          child: Container(
+          child: SizedBox(
             height: getHeight(context),
             width: getwidth(context),
             child: Column(
@@ -50,33 +50,60 @@ class _ChartState extends State<Chart> {
                         itemCount: messages.length,
                         reverse: true,
                         itemBuilder: (context, index) {
+                          if (isLoading && index == 0) {
+                            return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  margin: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(0),
+                                        topLeft: Radius.circular(20.0),
+                                        topRight: Radius.circular(20.0),
+                                        bottomRight: Radius.circular(20)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color:
+                                              Colors.black12.withOpacity(0.1),
+                                          offset: const Offset(2, 2),
+                                          blurRadius: 8,
+                                          spreadRadius: 0)
+                                    ],
+                                  ),
+                                  child: Lottie.asset("assets/loading.json",
+                                      height: 50.0, width: 100.0),
+                                ));
+                          }
                           return Align(
-                            alignment: index % 2 == 0
+                            alignment: messages[index]["from"] != "me"
                                 ? Alignment.centerLeft
                                 : Alignment.centerRight,
                             child: Container(
                               // width: getwidth(context) * 0.6,
-                              margin: EdgeInsets.all(10.0),
-                              padding: EdgeInsets.all(10.0),
+                              margin: const EdgeInsets.all(10.0),
+                              padding: const EdgeInsets.all(10.0),
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
-                                      bottomLeft: index % 2 == 0
-                                          ? Radius.circular(0)
-                                          : Radius.circular(20.0),
-                                      topLeft: Radius.circular(20.0),
-                                      topRight: Radius.circular(20.0),
-                                      bottomRight: index % 2 == 0
-                                          ? Radius.circular(20)
-                                          : Radius.circular(0.0)),
+                                      bottomLeft:
+                                          messages[index]["from"] != "me"
+                                              ? const Radius.circular(0)
+                                              : const Radius.circular(20.0),
+                                      topLeft: const Radius.circular(20.0),
+                                      topRight: const Radius.circular(20.0),
+                                      bottomRight:
+                                          messages[index]["from"] != "me"
+                                              ? const Radius.circular(20)
+                                              : const Radius.circular(0.0)),
                                   boxShadow: [
                                     BoxShadow(
                                         color: Colors.black12.withOpacity(0.1),
-                                        offset: Offset(2, 2),
+                                        offset: const Offset(2, 2),
                                         blurRadius: 8,
                                         spreadRadius: 0)
                                   ],
                                   gradient: LinearGradient(
-                                      colors: index % 2 == 0
+                                      colors: messages[index]["from"] != "me"
                                           ? [Colors.white, Colors.white]
                                           : ColorConfig.gradient,
                                       begin: Alignment.topLeft,
@@ -87,17 +114,17 @@ class _ChartState extends State<Chart> {
                                 children: [
                                   Flexible(
                                       child: Text(
-                                    messages[messages.length - index - 1],
+                                    messages[index]["message"],
                                     style: TextStyle(
-                                        color: index % 2 == 0
+                                        color: messages[index]["from"] != "me"
                                             ? Colors.black
                                             : Colors.white),
                                   )),
-                                  SizedBox(width: 5.0),
+                                  const SizedBox(width: 5.0),
                                   Flexible(
                                       child: Text(
-                                    "07:10",
-                                    style: TextStyle(
+                                    messages[index]["time"],
+                                    style: const TextStyle(
                                         fontSize: 12.0, color: Colors.black54),
                                   )),
                                 ],
@@ -109,7 +136,7 @@ class _ChartState extends State<Chart> {
                   height: getHeight(context) * 0.014,
                 ),
                 Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       border: Border(
                           top: BorderSide(color: Colors.grey, width: 2.0))),
                   height: getHeight(context) * 0.1,
@@ -140,12 +167,44 @@ class _ChartState extends State<Chart> {
                           ),
                         ),
                         IconButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (controller.text.isEmpty) return;
+                              String question = controller.text;
                               setState(() {
-                                messages.add(controller.text);
+                                isLoading = true;
                                 controller.clear();
                               });
+                              setState(() {
+                                messages.insert(0, {
+                                  "message": question,
+                                  "from": "me",
+                                  "time":
+                                      DateFormat("hh:mm").format(DateTime.now())
+                                });
+                              });
+
+                              try {
+                                String answer = await OpenAI().answer(question);
+                                messages.insert(0, {
+                                  "message": answer,
+                                  "from": "bot",
+                                  "time":
+                                      DateFormat("hh:mm").format(DateTime.now())
+                                });
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              } catch (e) {
+                                setState(() {
+                                  messages.insert(0, {
+                                    "message": "Some error occurred",
+                                    "from": "bot",
+                                    "time": DateFormat("hh:mm")
+                                        .format(DateTime.now())
+                                  });
+                                  isLoading = false;
+                                });
+                              }
                             },
                             icon: Icon(
                               LineIcons.paperPlane,

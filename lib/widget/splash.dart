@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:collageproject/config/color_config.dart';
 import 'package:collageproject/utils/size.dart';
-import 'package:collageproject/widget/chart.dart';
+import 'package:collageproject/widget/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -48,19 +48,19 @@ class _SplashState extends State<Splash> {
                 SizedBox(
                   height: getHeight(context) * 0.02,
                 ),
-                Text(
+                const Text(
                   """
 Lorem ipsum dolor sit amet. Qui consequatur delenrum et quidem officiis. A possimus fugit quo error consectetur et omnis rerum eum rerum voluptas quo autem odio. Et laudantium iste ea obcaecati modi et officia voluptatem ab voluptas porro eos officia commodi.
 """,
                   style: TextStyle(color: Colors.black54, fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
-                Spacer(),
+                const Spacer(),
                 GestureDetector(
                   onTap: () {
                     Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (context) => Chart()),
+                        MaterialPageRoute(builder: (context) => const Chat()),
                         (route) => false);
                   },
                   child: Container(
@@ -73,7 +73,7 @@ Lorem ipsum dolor sit amet. Qui consequatur delenrum et quidem officiis. A possi
                           end: Alignment.bottomRight),
                       borderRadius: BorderRadius.circular(40),
                     ),
-                    child: Center(
+                    child: const Center(
                         child: Text(
                       "Start Now",
                       style: TextStyle(
